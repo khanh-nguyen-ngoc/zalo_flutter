@@ -103,6 +103,31 @@ class ZaloFlutter {
     return rs;
   }
 
+  /// * Đăng nhập lấy chỉ lấy Oauth
+  /// * Authenticate (with app or webview)
+  /// * More info Android: https://developers.zalo.me/docs/sdk/android-sdk/dang-nhap/dang-nhap-post-6027
+  /// * More info Ios: https://developers.zalo.me/docs/sdk/ios-sdk/dang-nhap/dang-nhap-post-6006
+  static Future<Map<dynamic, dynamic>?> loginGetOauthCodeOnly({
+    String? refreshToken,
+    Map<String, dynamic> externalInfo = const <String, dynamic>{},
+  }) async {
+    final String codeVerifier = ZaloFlutter._getCodeVerifier();
+    final String codeChallenge = ZaloFlutter._getCodeChallenge(codeVerifier);
+    final Map<dynamic, dynamic>? rs = await channel.invokeMethod<Map<dynamic, dynamic>?>(
+      'loginGetOauthCodeOnly',
+      <String, dynamic>{
+        'codeVerifier': codeVerifier,
+        'codeChallenge': codeChallenge,
+        'extInfo': externalInfo,
+        'refreshToken': refreshToken,
+      },
+    ).setTimeout(_timeout);
+    return rs?..addAll(<String, dynamic >{
+      'codeVerifier': codeVerifier,
+      'codeChallenge': codeChallenge,
+    });
+  }
+
   /// * Lấy thông tin người dùng
   /// * Get Zalo user profile
   /// * More info Android: https://developers.zalo.me/docs/sdk/android-sdk/open-api/lay-thong-tin-profile-post-6050

@@ -34,6 +34,9 @@ public class SwiftZaloFlutterPlugin: NSObject, FlutterPlugin {
         case "login":
             login(call, result)
             break
+        case "loginGetOauthCodeOnly":
+            loginGetOauthCodeOnly(call, result)
+            break
         case "getUserProfile":
             getUserProfile(call, result)
             break
@@ -125,6 +128,50 @@ public class SwiftZaloFlutterPlugin: NSObject, FlutterPlugin {
                     "errorMessage": "Other error: authenticateZalo - cannot get response",
                 ]
                 
+                let map : [String : Any?] = [
+                    "isSuccess": false,
+                    "error": error
+                ]
+                result(map)
+            }
+        }
+    }
+
+    func loginGetOauthCodeOnly(_ call: FlutterMethodCall,_ result: @escaping FlutterResult) {
+        let arguments = call.arguments as! Dictionary<String, Any>
+        let codeChallenge = arguments["codeChallenge"] as! String
+        let extInfo = arguments["extInfo"] as? [AnyHashable : Any]
+        let rootViewController = UIApplication.shared.keyWindow?.rootViewController
+
+        ZaloSDK.sharedInstance().authenticateZalo(with: ZAZAloSDKAuthenTypeViaZaloAppAndWebView, parentController: rootViewController, codeChallenge: codeChallenge, extInfo: extInfo) { (authenResponse) in
+            if let authenResponse = authenResponse {
+                let errorCode = authenResponse.errorCode
+                let errorMessage = authenResponse.errorMessage
+                let oauthCode = authenResponse.oauthCode
+
+                if (authenResponse.isSucess == true) {
+                    let map : [String : Any?] = [
+                        "isSuccess": true,
+                        "oauthCode": oauthCode
+                    ]
+                    result(map)
+                } else {
+                    let error : [String : Any?] = [
+                        "errorCode": errorCode,
+                        "errorMessage": errorMessage,
+                    ]
+                    let map : [String : Any?] = [
+                        "isSuccess": false,
+                        "error": error
+                    ]
+                    result(map)
+                }
+            } else {
+                let error : [String : Any?] = [
+                    "errorCode": -9999,
+                    "errorMessage": "Other error: authenticateZalo - cannot get response",
+                ]
+
                 let map : [String : Any?] = [
                     "isSuccess": false,
                     "error": error
