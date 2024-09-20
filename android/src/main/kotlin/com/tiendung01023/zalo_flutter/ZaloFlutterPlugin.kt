@@ -66,6 +66,7 @@ class ZaloFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 "logout" -> logout(result)
                 "validateRefreshToken" -> validateRefreshToken(call, result)
                 "login" -> login(call, result)
+                "loginGetOauthCodeOnly" -> loginGetOauthCodeOnly(call, result)
                 "getUserProfile" -> getUserProfile(call, result)
                 "getUserFriendList" -> getUserFriendList(call, result)
                 "getUserInvitableFriendList" -> getUserInvitableFriendList(call, result)
@@ -112,6 +113,38 @@ class ZaloFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             override fun onGetOAuthComplete(response: OauthResponse) {
                 val oauthCode = response.oauthCode
                 zaloInstance.getAccessTokenByOAuthCode(activity, oauthCode, codeVerifier, withZOGraphCallBack(result))
+            }
+
+            override fun onAuthenError(errorResponse: ErrorResponse?) {
+                val error: MutableMap<String, Any?> = HashMap()
+                error["errorCode"] = errorResponse?.errorCode
+                error["errorMessage"] = errorResponse?.errorMsg
+                error["errorDescription"] = errorResponse?.errorDescription
+                error["errorReason"] = errorResponse?.errorReason
+                val data: Map<String, Any> = HashMap()
+                val map: MutableMap<String, Any?> = HashMap()
+                map["isSuccess"] = false
+                map["error"] = error
+                map["data"] = data
+                result.success(map)
+            }
+        }
+        zaloInstance.authenticateZaloWithAuthenType(activity, LoginVia.APP_OR_WEB, codeChallenge, extInfo, listener)
+    }
+
+    @Throws(Exception::class)
+    private fun loginGetOauthCodeOnly(call: MethodCall, result: Result) {
+        val arguments = call.arguments as Map<*, *>
+        val extInfo = JSONObject(arguments["extInfo"] as Map<*, *>)
+        val codeVerifier = arguments["codeVerifier"] as String
+        val codeChallenge = arguments["codeChallenge"] as String
+        val listener: OAuthCompleteListener = object : OAuthCompleteListener() {
+            override fun onGetOAuthComplete(response: OauthResponse) {
+                val map: MutableMap<String, Any?> = HashMap()
+                val oauthCode = response.oauthCode
+                map["isSuccess"] = true
+                map["oauthCode"] = oauthCode
+                result.success(map)
             }
 
             override fun onAuthenError(errorResponse: ErrorResponse?) {
