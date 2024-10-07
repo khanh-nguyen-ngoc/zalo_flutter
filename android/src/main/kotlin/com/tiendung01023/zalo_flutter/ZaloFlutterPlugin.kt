@@ -161,7 +161,7 @@ class ZaloFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.success(map)
             }
         }
-        zaloInstance.authenticateZaloWithAuthenType(activity, LoginVia.APP_OR_WEB, codeChallenge, extInfo, listener)
+        zaloInstance.authenticateZaloWithAuthenType(activity, LoginVia.APP, codeChallenge, extInfo, listener)
     }
 
     @Throws(Exception::class)

@@ -143,7 +143,7 @@ public class SwiftZaloFlutterPlugin: NSObject, FlutterPlugin {
         let extInfo = arguments["extInfo"] as? [AnyHashable : Any]
         let rootViewController = UIApplication.shared.keyWindow?.rootViewController
 
-        ZaloSDK.sharedInstance().authenticateZalo(with: ZAZAloSDKAuthenTypeViaZaloAppAndWebView, parentController: rootViewController, codeChallenge: codeChallenge, extInfo: extInfo) { (authenResponse) in
+        ZaloSDK.sharedInstance().authenticateZalo(with: ZAZaloSDKAuthenTypeViaZaloAppOnly, parentController: rootViewController, codeChallenge: codeChallenge, extInfo: extInfo) { (authenResponse) in
             if let authenResponse = authenResponse {
                 let errorCode = authenResponse.errorCode
                 let errorMessage = authenResponse.errorMessage
