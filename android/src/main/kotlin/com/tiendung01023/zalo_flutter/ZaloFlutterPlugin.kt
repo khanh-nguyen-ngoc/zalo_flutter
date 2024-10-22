@@ -2,11 +2,15 @@ package com.tiendung01023.zalo_flutter
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Base64
 import android.util.Log
 import androidx.annotation.NonNull
+import com.zing.zalo.zalosdk.core.helper.AppInfo
+import com.zing.zalo.zalosdk.oauth.*
+import com.zing.zalo.zalosdk.oauth.model.ErrorResponse
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -17,12 +21,8 @@ import io.flutter.plugin.common.MethodChannel.Result
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.lang.Exception
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
-
-import com.zing.zalo.zalosdk.oauth.*
-import com.zing.zalo.zalosdk.oauth.model.ErrorResponse
 
 /** ZaloFlutterPlugin */
 class ZaloFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
@@ -136,7 +136,6 @@ class ZaloFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private fun loginGetOauthCodeOnly(call: MethodCall, result: Result) {
         val arguments = call.arguments as Map<*, *>
         val extInfo = JSONObject(arguments["extInfo"] as Map<*, *>)
-        val codeVerifier = arguments["codeVerifier"] as String
         val codeChallenge = arguments["codeChallenge"] as String
         val listener: OAuthCompleteListener = object : OAuthCompleteListener() {
             override fun onGetOAuthComplete(response: OauthResponse) {
@@ -147,7 +146,23 @@ class ZaloFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.success(map)
             }
 
+            override fun onZaloNotInstalled(context: Context?) {
+                // Customize the alert dialog for a more modern look
+                val alertBuilder = AlertDialog.Builder(context, R.style.LightDialogTheme)
+                alertBuilder
+                        .setMessage(ZaloSDK.Instance.localizedString.zaloNotInstalledMessage)
+                        .setPositiveButton(ZaloSDK.Instance.localizedString.installMessage) { arg0, arg1 ->
+                            AppInfo.launchMarketApp(context, "com.zing.zalo")
+                        }
+                alertBuilder
+                        .setNegativeButton(ZaloSDK.Instance.localizedString.cancelMessage) { dialog, which ->
+                            dialog.dismiss()
+                        }
+                alertBuilder.setCancelable(false).show()
+            }
+
             override fun onAuthenError(errorResponse: ErrorResponse?) {
+                Log.d("TAG", "onAuthenError")
                 val error: MutableMap<String, Any?> = HashMap()
                 error["errorCode"] = errorResponse?.errorCode
                 error["errorMessage"] = errorResponse?.errorMsg
