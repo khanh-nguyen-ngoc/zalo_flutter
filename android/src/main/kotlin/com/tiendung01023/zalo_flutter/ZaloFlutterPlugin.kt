@@ -134,6 +134,8 @@ class ZaloFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     @Throws(Exception::class)
     private fun loginGetOauthCodeOnly(call: MethodCall, result: Result) {
+        /// useWeakReferenceCallback == true can cause the OAuthCompleteListener to be GC collected, making the callback response not working
+        zaloInstance.setUseWeakReferenceCallback(false)
         val arguments = call.arguments as Map<*, *>
         val extInfo = JSONObject(arguments["extInfo"] as Map<*, *>)
         val codeChallenge = arguments["codeChallenge"] as String
